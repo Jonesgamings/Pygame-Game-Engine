@@ -1,4 +1,5 @@
 import pygame
+import json
 from object import Object
 
 WHITE = (255, 255, 255)
@@ -20,7 +21,7 @@ class Game:
         displayedArea = self.camera.getDisplayedArea()
         objects = self.map.getObjects(displayedArea)
         for object in objects:
-            object.draw(self.screen, self.camera.zoom, self.camera.displayingArea.topleft)
+            object.draw(self.screen, self.camera)
 
     def addObject(self, object):
         self.map.addObject(object)
@@ -142,13 +143,31 @@ class Map:
     def addObject(self, object):
         self.objects.append(object)
 
+    def saveMap(self, filename):
+        data = {}
+        for i, object in enumerate(self.objects):
+            data[i] = object.save()
+        
+        with open(f"{filename}.json", "w") as file:
+            json.dump(data, file, indent=4)
+
+    def loadMap(self, filename):
+        with open(f"{filename}.json", "r") as file:
+            data = json.load(file)
+
+        for object in data.values():
+            toAdd = Object.createMe(object)
+            self.objects.append(toAdd)
+
 surf = pygame.Surface((50, 50))
 surf.fill((0, 0, 0))
 
 test = Object((0, 0), surf)
-test2 = Object((0, 100), surf)
+test2 = Object((0, 3000), surf)
 
 game = Game(10 ** 8, 60)
-game.addObject(test)
-game.addObject(test2)
+game.map.loadMap("test")
+#game.addObject(test)
+#game.addObject(test2)
+#game.map.saveMap("test")
 game.mainloop()
