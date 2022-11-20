@@ -14,7 +14,9 @@ class Object:
         self.pos = (x, y)
 
     def draw(self, screen: pygame.Surface, zoom, camStart):
-        screenPosX = (self.pos[0] - camStart[0] / zoom) - self.rect.width / 2
-        screenPosY = (self.pos[1] - camStart[1] / zoom) - self.rect.height / 2
+        x = self.pos[0] / zoom
+        y = self.pos[1] / zoom
+        screenPosX = (x - camStart[0] / zoom) - self.rect.width / 2
+        screenPosY = (y - camStart[1] / zoom) - self.rect.height / 2
         toBlit = pygame.transform.rotozoom(self.sprite, 0, 1/zoom)
         screen.blit(toBlit, (screenPosX, screenPosY))

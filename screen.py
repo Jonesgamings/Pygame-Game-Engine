@@ -144,8 +144,11 @@ class Map:
 
 surf = pygame.Surface((50, 50))
 surf.fill((0, 0, 0))
-test = Object((0, 0), surf)
 
-game = Game(100, 60)
+test = Object((0, 0), surf)
+test2 = Object((0, 100), surf)
+
+game = Game(10 ** 8, 60)
 game.addObject(test)
+game.addObject(test2)
 game.mainloop()
