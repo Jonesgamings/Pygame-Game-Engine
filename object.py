@@ -1,6 +1,5 @@
 import pygame
 
-
 class Object:
 
     def __init__(self, pos, sprite: pygame.Surface) -> None:
@@ -10,6 +9,7 @@ class Object:
         self.updateRect()
 
     def updateRect(self):
+        self.sprite.get_rect()
         self.rect.topleft = self.pos
 
     def moveBy(self, dx, dy):
@@ -21,13 +21,10 @@ class Object:
         self.updateRect()
 
     def draw(self, screen: pygame.Surface, camera):
-        self.updateRect()
         x = self.pos[0] / camera.zoom
         y = self.pos[1] / camera.zoom
-        screenPosX = (x - camera.displayingArea.topleft[0] /
-                      camera.zoom) - self.rect.width / 2
-        screenPosY = (y - camera.displayingArea.topleft[1] /
-                      camera.zoom) - self.rect.height / 2
+        screenPosX = (x - camera.displayingArea.topleft[0] / camera.zoom)
+        screenPosY = (y - camera.displayingArea.topleft[1] / camera.zoom)
         toBlit = pygame.transform.rotozoom(self.sprite, 0, 1 / camera.zoom)
         screen.blit(toBlit, (screenPosX, screenPosY))
 
