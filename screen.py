@@ -1,6 +1,10 @@
 import pygame
 import json
 from object import Object
+from random import randint
+
+pygame.init()
+pygame.font.init()
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -53,6 +57,25 @@ class Game:
             if event.button == 5:
                 self.camera.zoomBy(self.camera.zoomSpeed)
 
+    def displayTextInfo(self):
+        FONTSIZE = 20
+        font = pygame.font.SysFont("arial", FONTSIZE, True)
+
+        fps = f"FPS: {round(self.clock.get_fps(), 1)}"
+        fpsSurf = font.render(fps, False, RED)
+
+        pos = f"X: {round(self.camera.pos[0], 1)}, Y: {round(self.camera.pos[1], 1)}"
+        posSurf = font.render(pos, False, RED)
+
+        zoom = f"ZOOM: {round(1/self.camera.zoom, 3)}"
+        zoomSurf = font.render(zoom, False, RED)
+
+        self.screen.blit(fpsSurf, (0, 0))
+        self.screen.blit(posSurf, (0, FONTSIZE))
+        self.screen.blit(zoomSurf, (0, FONTSIZE * 2))
+
+        pygame.draw.circle(self.screen, (230, 230, 230), (self.screen.get_size()[0] / 2, self.screen.get_size()[1] / 2), 3)
+
     def mainloop(self):
         self.running = True
         while self.running:
@@ -70,6 +93,7 @@ class Game:
 
             self.screen.fill(WHITE)
             self.displayObjects()
+            self.displayTextInfo()
 
             self.clock.tick(self.FPS)
             pygame.display.flip()
@@ -84,7 +108,7 @@ class Camera:
         self.pos = (0, 0)
         self.zoom = 1
         self.moveSpeed = 5
-        self.zoomSpeed = 0.1
+        self.zoomSpeed = 0.05
         self.displayingArea = None
 
     def updateDisplayedArea(self):
@@ -137,7 +161,6 @@ class Map:
         for object in self.objects:
             if displayedArea.colliderect(object.rect):
                 objectsInView.append(object)
-
         return objectsInView
 
     def addObject(self, object):
@@ -159,15 +182,22 @@ class Map:
             toAdd = Object.createMe(object)
             self.objects.append(toAdd)
 
-surf = pygame.Surface((50, 50))
-surf.fill((0, 0, 0))
+if __name__ == "__main__":
+    MAXOBJECTS = 50000
+    MAXCOORD = 100000
+    MINCOORD = 0
 
-test = Object((0, 0), surf)
-test2 = Object((0, 3000), surf)
+    surf = pygame.Surface((50, 50), pygame.SRCALPHA)
+    surf.fill((0, 0, 0))
 
-game = Game(10 ** 8, 60)
-game.map.loadMap("test")
-#game.addObject(test)
-#game.addObject(test2)
-#game.map.saveMap("test")
-game.mainloop()
+    game = Game(10 ** 8, 0)
+
+    for _ in range(MAXOBJECTS):
+        surf = pygame.Surface((50, 50), pygame.SRCALPHA)
+        surf.fill((randint(0, 255), randint(0, 255), randint(0, 255)))
+        x = randint(MINCOORD, MAXCOORD)
+        y = randint(MINCOORD, MAXCOORD)
+        obj = Object((x, y), surf)
+        game.addObject(obj)
+
+    game.mainloop()
