@@ -183,8 +183,8 @@ class Map:
             self.objects.append(toAdd)
 
 if __name__ == "__main__":
-    MAXOBJECTS = 50000
-    MAXCOORD = 100000
+    MAXOBJECTS = 5000
+    MAXCOORD = 10000
     MINCOORD = 0
 
     surf = pygame.Surface((50, 50), pygame.SRCALPHA)
