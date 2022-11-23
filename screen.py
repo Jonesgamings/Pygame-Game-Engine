@@ -2,12 +2,18 @@ import pygame
 import json
 from object import Object
 from random import randint
+from time import time
 
 pygame.init()
 pygame.font.init()
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+
+class GUI:
+
+    def __init__(self) -> None:
+        pass
 
 class Game:
 
@@ -30,32 +36,42 @@ class Game:
     def addObject(self, object):
         self.map.addObject(object)
 
-    def doMoveInputs(self):
+    def doMoveInputs(self, dt):
         moveVertical = 0
         moveHorizontal = 0
         keys = pygame.key.get_pressed()
+        buttons = pygame.key.get_pressed()
 
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            moveVertical -= self.camera.moveSpeed * self.camera.zoom
+            moveVertical -= self.camera.moveSpeed * self.camera.zoom * dt
 
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            moveVertical += self.camera.moveSpeed * self.camera.zoom
+            moveVertical += self.camera.moveSpeed * self.camera.zoom * dt
 
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            moveHorizontal -= self.camera.moveSpeed * self.camera.zoom
+            moveHorizontal -= self.camera.moveSpeed * self.camera.zoom * dt
 
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            moveHorizontal += self.camera.moveSpeed * self.camera.zoom
+            moveHorizontal += self.camera.moveSpeed * self.camera.zoom * dt
+
+        if buttons[0]:
+            pass
+
+        if buttons[1]:
+            pass
+
+        if buttons[2]:
+            pass
         
         self.camera.moveBy(moveHorizontal, moveVertical)
 
-    def doZoomInputs(self, event):
+    def doZoomInputs(self, event, dt):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4:
-                self.camera.zoomBy(-self.camera.zoomSpeed)
+                self.camera.zoomBy(-self.camera.zoomSpeed * dt)
 
             if event.button == 5:
-                self.camera.zoomBy(self.camera.zoomSpeed)
+                self.camera.zoomBy(self.camera.zoomSpeed * dt)
 
     def displayTextInfo(self):
         FONTSIZE = 20
@@ -78,7 +94,15 @@ class Game:
 
     def mainloop(self):
         self.running = True
+        start = time()
+        lastTick = 0
         while self.running:
+            
+            gametime = time() - start
+
+            dt = (gametime - lastTick) * self.clock.get_fps()
+            print(dt)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -87,13 +111,15 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
 
-                self.doZoomInputs(event)
+                self.doZoomInputs(event, dt)
 
-            self.doMoveInputs()
+            self.doMoveInputs(dt)
 
             self.screen.fill(WHITE)
             self.displayObjects()
             self.displayTextInfo()
+
+            lastTick = gametime
 
             self.clock.tick(self.FPS)
             pygame.display.flip()
