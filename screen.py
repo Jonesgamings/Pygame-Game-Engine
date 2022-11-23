@@ -1,6 +1,6 @@
 import pygame
 import json
-from object import Object
+from object import Object, GravityObject
 from random import randint
 from time import time
 
@@ -105,7 +105,6 @@ class Game:
             gametime = time() - start
 
             dt = (gametime - lastTick) * self.clock.get_fps()
-            print(dt)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -118,6 +117,7 @@ class Game:
                 self.doZoomInputs(event, dt)
 
             self.doMoveInputs(dt)
+            self.updateObjects()
 
             self.screen.fill(WHITE)
             self.displayObjects()
@@ -213,8 +213,8 @@ class Map:
             self.objects.append(toAdd)
 
 if __name__ == "__main__":
-    MAXOBJECTS = 5000
-    MAXCOORD = 10000
+    MAXOBJECTS = 30
+    MAXCOORD = 1000
     MINCOORD = 0
 
     surf = pygame.Surface((50, 50), pygame.SRCALPHA)
@@ -227,7 +227,7 @@ if __name__ == "__main__":
         surf.fill((randint(0, 255), randint(0, 255), randint(0, 255)))
         x = randint(MINCOORD, MAXCOORD)
         y = randint(MINCOORD, MAXCOORD)
-        obj = Object((x, y), surf)
+        obj = GravityObject((x, y), surf, 3)
         game.addObject(obj)
 
     game.mainloop()
