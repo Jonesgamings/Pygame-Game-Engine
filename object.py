@@ -28,6 +28,9 @@ class Object:
         toBlit = pygame.transform.rotozoom(self.sprite, 0, 1 / camera.zoom)
         screen.blit(toBlit, (screenPosX, screenPosY))
 
+    def update(self, game):
+        pass
+
     def imageToJSON(self):
         pass
 

@@ -33,6 +33,10 @@ class Game:
         for object in objects:
             object.draw(self.screen, self.camera)
 
+    def updateObjects(self):
+        for object in self.map.objects:
+            object.update(self)
+
     def addObject(self, object):
         self.map.addObject(object)
 
