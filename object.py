@@ -3,11 +3,12 @@ import math
 
 class Object:
 
-    def __init__(self, pos, sprite: pygame.Surface) -> None:
+    def __init__(self, pos, sprite: pygame.Surface, velocity = (0, 0)) -> None:
         self.type = "DEFAULT"
         self.pos = pos
         self.sprite = sprite
         self.rect = self.sprite.get_rect()
+        self.vx, self.vy = velocity
         self.updateRect()
 
     def updateRect(self):
@@ -31,7 +32,7 @@ class Object:
         screen.blit(toBlit, (screenPosX, screenPosY))
 
     def update(self, game):
-        pass
+        self.moveBy(self.vx, self.vy)
 
     def imageToJSON(self):
         pass
@@ -58,37 +59,26 @@ class Object:
 
 class GravityObject(Object):
 
-    GRAVCONSTANT = 1
+    GRAVCONSTANT = 0.00005
 
     def __init__(self, pos, sprite: pygame.Surface, mass) -> None:
         super().__init__(pos, sprite)
         self.type = "GRAVITY_OBJECT"
         self.mass = mass
-        self.vx = 0
-        self.vy = 0
+
+    def normalize(self, vector):
+        currentLen = math.sqrt((vector[0] ** 2) + (vector[1] ** 2))
+        newVector = vector[0] / currentLen, vector[1] / currentLen
+        return newVector
 
     def update(self, game):
         super().update(game)
         for object in game.map.objects:
-            if object.type == self.type:
-                changeX = self.pos[0] - object.pos[0]
-                changeY = self.pos[1] - object.pos[1]
-                distance = changeX ** 2 + changeY ** 2
-
-                if changeX == 0:
-                    angle = 0
-
-                elif changeY == 0:
-                    angle = 90
-
-                else:
-                    angle = math.atan2(changeY, changeX)
-
-                if distance > 0.0:
-                    force = (GravityObject.GRAVCONSTANT * self.mass * self.mass) / distance
-                    Xforce = force * math.cos(angle)
-                    Yforce = force * math.sin(angle)
-                    self.vx += Xforce
-                    self.vy += Yforce
+            if object != self:
+                if object.type == self.type:
+                    normal = self.normalize((object.pos[0] - self.pos[0], object.pos[1] - self.pos[1]))
+                    force = normal[0] * GravityObject.GRAVCONSTANT * object.mass, normal[1] * GravityObject.GRAVCONSTANT * object.mass
+                    self.vx += force[0]
+                    self.vy += force[1]
 
         self.moveBy(self.vx, self.vy)

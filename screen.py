@@ -1,7 +1,7 @@
 import pygame
 import json
 from object import Object, GravityObject
-from random import randint
+from random import randint, uniform
 from time import time
 
 pygame.init()
@@ -213,8 +213,8 @@ class Map:
             self.objects.append(toAdd)
 
 if __name__ == "__main__":
-    MAXOBJECTS = 30
-    MAXCOORD = 1000
+    MAXOBJECTS = 100
+    MAXCOORD = 10000
     MINCOORD = 0
 
     surf = pygame.Surface((50, 50), pygame.SRCALPHA)
@@ -227,7 +227,7 @@ if __name__ == "__main__":
         surf.fill((randint(0, 255), randint(0, 255), randint(0, 255)))
         x = randint(MINCOORD, MAXCOORD)
         y = randint(MINCOORD, MAXCOORD)
-        obj = GravityObject((x, y), surf, 3)
+        obj = Object((x, y), surf)
         game.addObject(obj)
 
     game.mainloop()
