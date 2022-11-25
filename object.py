@@ -34,6 +34,13 @@ class Object:
     def update(self, game):
         self.moveBy(self.vx, self.vy)
 
+    def checkClick(self, pos):
+        self.updateRect()
+        if self.rect.collidepoint(pos):
+            return True
+
+        return False
+
     def imageToJSON(self):
         pass
 

@@ -1,4 +1,4 @@
-from screen import Game, Map, Camera, GUI, GUIElement
+from screen import Game, Map, Camera
 from object import Object, GravityObject
 import pygame
 from random import randint

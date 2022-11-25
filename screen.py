@@ -26,7 +26,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.map = Map(self.mapSize, self.mapSize)
         self.camera = Camera(self.map, self.screen)
-        self.GUI = GUI((self.screenWidth * 2 / 3, 0), self.screenWidth / 3, self.screenHeight)
+        self.selectedObjectType = None
         self.running = False
 
     def displayObjects(self):
@@ -41,6 +41,24 @@ class Game:
 
     def addObject(self, object):
         self.map.addObject(object)
+
+    def screenToReal(self, pos):
+        display = self.camera.getDisplayedArea()
+        realX = (display.width * pos[0] / self.screenWidth) + display.topleft[0]
+        realY = (display.height * pos[1] / self.screenHeight) + display.topleft[1]
+        realPos = (realX, realY)
+
+        return realPos
+
+    def checkClickOnObject(self, pos):
+        realPos = self.screenToReal(pos)
+
+        for object in self.map.getObjects(self.camera.getDisplayedArea()):
+            if object.checkClick(realPos):
+                self.selectedObjectType = object.type
+                return False
+
+        return True
 
     def doMoveInputs(self, dt):
         moveVertical = 0
@@ -61,14 +79,15 @@ class Game:
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             moveHorizontal += self.camera.moveSpeed * self.camera.zoom * dt
 
-        if buttons[0]:
-            self.GUI.checkClick(mousePos, 0)
+        if buttons[0]: #LEFT
+            pass
 
-        if buttons[1]:
-            self.GUI.checkClick(mousePos, 1)
+        if buttons[2]: #RIGHT
+            pass
 
-        if buttons[2]:
-            self.GUI.checkClick(mousePos, 2)
+        if buttons[1]: #MIDDLE
+            if self.checkClickOnObject(mousePos):
+                self.selectedObjectType = None
         
         self.camera.moveBy(moveHorizontal, moveVertical)
 
@@ -93,9 +112,13 @@ class Game:
         zoom = f"ZOOM: {round(1/self.camera.zoom, 3)}"
         zoomSurf = font.render(zoom, False, RED)
 
+        selected = f"SELECTED: {self.selectedObjectType}"
+        selectedSurf = font.render(selected, False, RED)
+
         self.screen.blit(fpsSurf, (0, 0))
         self.screen.blit(posSurf, (0, FONTSIZE))
         self.screen.blit(zoomSurf, (0, FONTSIZE * 2))
+        self.screen.blit(selectedSurf, (0, FONTSIZE * 3))
 
         pygame.draw.circle(self.screen, (230, 230, 230), (self.screenWidth / 2, self.screenHeight / 2), 3)
 
@@ -117,9 +140,6 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
 
-                    if event.key == pygame.K_TAB:
-                        self.GUI.toggleVisible()
-
                 self.doZoomInputs(event, dt)
 
             self.doMoveInputs(dt)
@@ -128,7 +148,6 @@ class Game:
             self.screen.fill(WHITE)
             self.displayObjects()
             self.displayTextInfo()
-            self.GUI.draw(self.screen)
 
             lastTick = gametime
 
@@ -136,41 +155,6 @@ class Game:
             pygame.display.flip()
 
         pygame.quit()
-
-class GUIElement:
-
-    def __init__(self) -> None:
-        pass
-
-class GUI:
-
-    def __init__(self, pos, width, height) -> None:
-        self.pos = pos
-        self.width = width
-        self.height = height
-        self.visible = True
-
-        self.surface = pygame.Surface((width, height))
-        self.surface.fill(LIGHTGREY)
-        self.surface.set_alpha(128)
-        self.elements = {}
-        self.currentSelected = None
-
-    def toggleVisible(self):
-        self.visible = not self.visible
-
-    def drawElements(self):
-        pass
-
-    def draw(self, screen):
-        if self.visible:
-            screen.blit(self.surface, self.pos)
-
-    def checkClick(self, pos, type_):
-        if self.visible:
-            pass
-
-        return False
 
 class Camera:
 
