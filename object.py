@@ -11,6 +11,12 @@ class Object:
         self.vx, self.vy = velocity
         self.updateRect()
 
+    def __str__(self) -> str:
+        return f"{self.type}: {self.sprite.get_at((0, 0))}"
+
+    def __repr__(self) -> str:
+        return f"{self.type}: {self.sprite.get_at((0, 0))}"
+
     def updateRect(self):
         self.sprite.get_rect()
         self.rect.topleft = self.pos
