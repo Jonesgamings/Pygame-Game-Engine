@@ -37,6 +37,9 @@ class Object:
         toBlit = pygame.transform.rotozoom(self.sprite, 0, 1 / camera.zoom)
         screen.blit(toBlit, (screenPosX, screenPosY))
 
+    def copy(self):
+        return Object((0, 0), self.sprite)
+
     def update(self, game):
         self.moveBy(self.vx, self.vy)
 
@@ -61,6 +64,14 @@ class Object:
             "IMAGE": None
         }
         return data
+
+    @classmethod
+    def createNew(self, type_, sprite, *args):
+        if type_ == "DEFAULT":
+            return Object((0, 0), sprite, *args)
+
+        elif type_ == "GRAVITY_OBJECT":
+            return GravityObject((0, 0), sprite, *args)
 
     @classmethod
     def createMe(self, jsonFile):

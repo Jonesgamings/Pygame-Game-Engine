@@ -6,11 +6,14 @@ from random import randint
 MAXOBJECTS = 100
 MAXCOORD = 10000
 MINCOORD = 0
+FPS = 60
 
 surf = pygame.Surface((50, 50), pygame.SRCALPHA)
 surf.fill((0, 0, 0))
 
-game = Game(10 ** 8, 0)
+game = Game(FPS)
+
+game.GUI.createElement((0, 0), "DEFAULT", surf)
 
 for _ in range(MAXOBJECTS):
     surf = pygame.Surface((50, 50), pygame.SRCALPHA)

@@ -17,17 +17,15 @@ LIGHTGREY = (210, 210, 210)
 
 class Game:
 
-    def __init__(self, mapSize, fps) -> None:
-        self.mapSize = mapSize
+    def __init__(self,fps) -> None:
         self.FPS = fps
 
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.screenWidth, self.screenHeight = self.screen.get_size()
         self.clock = pygame.time.Clock()
-        self.map = Map(self.mapSize, self.mapSize)
+        self.map = Map()
         self.camera = Camera(self.map, self.screen)
         self.GUI = GUI((self.screenWidth * 2 / 3, 0), self.screenWidth / 3, self.screenHeight)
-        self.selectedObject = None
         self.running = False
 
     def displayObjects(self):
@@ -56,7 +54,7 @@ class Game:
             if object.checkClick(realPos):
                 return object
 
-        return False
+        return None
 
     def doMoveInputs(self, dt):
         moveVertical = 0
@@ -78,17 +76,21 @@ class Game:
             moveHorizontal += self.camera.moveSpeed * self.camera.zoom * dt
 
         if buttons[0]: #LEFT
-            pass
+            if not self.GUI.checkClick(mousePos) and self.GUI.selectedObject:
+                newObj = self.GUI.selectedObject.copy()
+                realPos = self.screenToReal(mousePos)
+                newObj.moveTo(realPos[0], realPos[1])
+                self.addObject(newObj)
 
         if buttons[2]: #RIGHT
-            clickedOn = self.checkObjectClicked(mousePos)
-            if clickedOn:
-                self.map.objects.remove(clickedOn)
+            if not self.GUI.checkClick(mousePos):
+                clickedOn = self.checkObjectClicked(mousePos)
+                if clickedOn:
+                    self.map.objects.remove(clickedOn)
 
         if buttons[1]: #MIDDLE
-            clickedOn = self.checkObjectClicked(mousePos)
-            if clickedOn:
-                self.selectedObject = clickedOn
+            if not self.GUI.checkClick(mousePos):
+                self.GUI.selectedObject = self.checkObjectClicked(mousePos)
         
         self.camera.moveBy(moveHorizontal, moveVertical)
 
@@ -113,13 +115,13 @@ class Game:
         zoom = f"ZOOM: {round(1/self.camera.zoom, 3)}"
         zoomSurf = font.render(zoom, False, RED)
 
-        selected = f"SELECTED: {self.selectedObject}"
+        selected = f"SELECTED: {self.GUI.selectedObject}"
         selectedSurf = font.render(selected, False, RED)
 
         self.screen.blit(fpsSurf, (0, 0))
         self.screen.blit(posSurf, (0, FONTSIZE))
         self.screen.blit(zoomSurf, (0, FONTSIZE * 2))
-        self.screen.blit(selectedSurf, (0, FONTSIZE * 4))
+        self.screen.blit(selectedSurf, (0, FONTSIZE * 3))
 
         pygame.draw.circle(self.screen, (230, 230, 230), (self.screenWidth / 2, self.screenHeight / 2), 3)
 
@@ -163,8 +165,22 @@ class Game:
 
 class GUIElement:
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, pos, size, type_, sprite) -> None:
+        self.pos = pos
+        self.width, self.height = size
+        self.objectType = type_
+        self.objectSprite = sprite
+
+        self.rect = pygame.Rect(self.pos[0], self.pos[1], self.width, self.height)
+
+    def checkClick(self, pos):
+        if self.rect.collidepoint(pos):
+            return True
+
+        return False
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.objectSprite.get_at((0, 0)), self.rect)
 
 class GUI:
 
@@ -172,27 +188,62 @@ class GUI:
         self.pos = pos
         self.width = width
         self.height = height
-        self.visible = True
+        self.visible = False
+
+        self.rows = 10
+        self.columns = 10
+
+        self.gridX = 0
+        self.gridY = 0
 
         self.surface = pygame.Surface((width, height))
         self.surface.fill(LIGHTGREY)
         self.surface.set_alpha(128)
-        self.elements = {}
-        self.currentSelected = None
+        self.rect = self.surface.get_rect()
+        self.elements = []
+        self.selectedObject = None
+        self.updateRect()
+        self.updateGrid()
+
+    def updateGrid(self):
+        self.gridX = self.width / self.columns
+        self.gridY = self.height / self.rows
+    
+    def createElement(self, pos, type_, sprite):
+        realX = pos[0] * self.gridX + self.pos[0]
+        realY = pos[1] * self.gridY + self.pos[1]
+        element = GUIElement((realX, realY), (self.gridX - 1, self.gridY - 1), type_, sprite)
+        self.elements.append(element)
+
+    def updateRect(self):
+        self.rect = self.surface.get_rect()
+        self.rect.topleft = self.pos
 
     def toggleVisible(self):
         self.visible = not self.visible
 
-    def drawElements(self):
-        pass
+    def drawElements(self, screen):
+        for element in self.elements:
+            element.draw(screen)
 
     def draw(self, screen):
         if self.visible:
             screen.blit(self.surface, self.pos)
+            self.drawElements(screen)
 
-    def checkClick(self, pos, type_):
+    def checkElementsClick(self, pos):
+        for element in self.elements:
+            if element.checkClick(pos):
+                return Object.createNew(element.objectType, element.objectSprite)
+
+        return None
+
+    def checkClick(self, pos):
+        self.updateRect()
         if self.visible:
-            pass
+            if self.rect.collidepoint(pos):
+                self.selectedObject = self.checkElementsClick(pos)
+                return True
 
         return False
 
@@ -213,27 +264,16 @@ class Camera:
         topLY = self.pos[1] - ((screenY * self.zoom) / 2)
         width = screenX * self.zoom
         height = screenY * self.zoom
-        if (topLX * -1) < width and (topLY * -1) < height:
-            if (topLX < self.map.width) and (topLY < self.map.height):
-                self.displayingArea = pygame.Rect(topLX, topLY, width, height)
-                return True
-
-            else:
-                return False
-        
-        return False
+        self.displayingArea = pygame.Rect(topLX, topLY, width, height)
+        return True
 
     def moveTo(self, x, y):
-        old = self.pos
         self.pos = (x, y)
-        if not self.updateDisplayedArea():
-            self.pos = old
+        self.updateDisplayedArea()
 
     def moveBy(self, dx, dy):
-        old = self.pos
         self.pos = (self.pos[0] + dx, self.pos[1] + dy)
-        if not self.updateDisplayedArea():
-            self.pos = old
+        self.updateDisplayedArea()
 
     def zoomTo(self, zoom):
         self.zoom = zoom
@@ -247,9 +287,7 @@ class Camera:
 
 class Map:
 
-    def __init__(self, width, height) -> None:
-        self.width = width
-        self.height = height
+    def __init__(self) -> None:
         self.objects = []
 
     def getObjects(self, displayedArea: pygame.Rect):
