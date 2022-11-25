@@ -7,13 +7,13 @@ from time import time
 pygame.init()
 pygame.font.init()
 
+#EVERY TIME OBJECT MOVE CHECK IF IN FRAME
+#ADD VISIBEL TO OBJECT
+#JUST DRAW VISIBLE OBJECTS
+
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
-
-class GUI:
-
-    def __init__(self) -> None:
-        pass
+LIGHTGREY = (210, 210, 210)
 
 class Game:
 
@@ -22,9 +22,11 @@ class Game:
         self.FPS = fps
 
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.screenWidth, self.screenHeight = self.screen.get_size()
         self.clock = pygame.time.Clock()
         self.map = Map(self.mapSize, self.mapSize)
         self.camera = Camera(self.map, self.screen)
+        self.GUI = GUI((self.screenWidth * 2 / 3, 0), self.screenWidth / 3, self.screenHeight)
         self.running = False
 
     def displayObjects(self):
@@ -44,7 +46,8 @@ class Game:
         moveVertical = 0
         moveHorizontal = 0
         keys = pygame.key.get_pressed()
-        buttons = pygame.key.get_pressed()
+        buttons = pygame.mouse.get_pressed()
+        mousePos = pygame.mouse.get_pos()
 
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             moveVertical -= self.camera.moveSpeed * self.camera.zoom * dt
@@ -59,13 +62,13 @@ class Game:
             moveHorizontal += self.camera.moveSpeed * self.camera.zoom * dt
 
         if buttons[0]:
-            pass
+            self.GUI.checkClick(mousePos, 0)
 
         if buttons[1]:
-            pass
+            self.GUI.checkClick(mousePos, 1)
 
         if buttons[2]:
-            pass
+            self.GUI.checkClick(mousePos, 2)
         
         self.camera.moveBy(moveHorizontal, moveVertical)
 
@@ -94,7 +97,7 @@ class Game:
         self.screen.blit(posSurf, (0, FONTSIZE))
         self.screen.blit(zoomSurf, (0, FONTSIZE * 2))
 
-        pygame.draw.circle(self.screen, (230, 230, 230), (self.screen.get_size()[0] / 2, self.screen.get_size()[1] / 2), 3)
+        pygame.draw.circle(self.screen, (230, 230, 230), (self.screenWidth / 2, self.screenHeight / 2), 3)
 
     def mainloop(self):
         self.running = True
@@ -114,6 +117,9 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
 
+                    if event.key == pygame.K_TAB:
+                        self.GUI.toggleVisible()
+
                 self.doZoomInputs(event, dt)
 
             self.doMoveInputs(dt)
@@ -122,6 +128,7 @@ class Game:
             self.screen.fill(WHITE)
             self.displayObjects()
             self.displayTextInfo()
+            self.GUI.draw(self.screen)
 
             lastTick = gametime
 
@@ -129,6 +136,41 @@ class Game:
             pygame.display.flip()
 
         pygame.quit()
+
+class GUIElement:
+
+    def __init__(self) -> None:
+        pass
+
+class GUI:
+
+    def __init__(self, pos, width, height) -> None:
+        self.pos = pos
+        self.width = width
+        self.height = height
+        self.visible = True
+
+        self.surface = pygame.Surface((width, height))
+        self.surface.fill(LIGHTGREY)
+        self.surface.set_alpha(128)
+        self.elements = {}
+        self.currentSelected = None
+
+    def toggleVisible(self):
+        self.visible = not self.visible
+
+    def drawElements(self):
+        pass
+
+    def draw(self, screen):
+        if self.visible:
+            screen.blit(self.surface, self.pos)
+
+    def checkClick(self, pos, type_):
+        if self.visible:
+            pass
+
+        return False
 
 class Camera:
 
@@ -211,23 +253,3 @@ class Map:
         for object in data.values():
             toAdd = Object.createMe(object)
             self.objects.append(toAdd)
-
-if __name__ == "__main__":
-    MAXOBJECTS = 100
-    MAXCOORD = 10000
-    MINCOORD = 0
-
-    surf = pygame.Surface((50, 50), pygame.SRCALPHA)
-    surf.fill((0, 0, 0))
-
-    game = Game(10 ** 8, 0)
-
-    for _ in range(MAXOBJECTS):
-        surf = pygame.Surface((50, 50), pygame.SRCALPHA)
-        surf.fill((randint(0, 255), randint(0, 255), randint(0, 255)))
-        x = randint(MINCOORD, MAXCOORD)
-        y = randint(MINCOORD, MAXCOORD)
-        obj = Object((x, y), surf)
-        game.addObject(obj)
-
-    game.mainloop()
