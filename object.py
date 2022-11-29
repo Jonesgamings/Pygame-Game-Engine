@@ -1,5 +1,4 @@
 import pygame
-import math
 
 class Object:
 
@@ -66,43 +65,9 @@ class Object:
         return data
 
     @classmethod
-    def createNew(self, type_, sprite, *args):
-        if type_ == "DEFAULT":
-            return Object((0, 0), sprite, *args)
-
-        elif type_ == "GRAVITY_OBJECT":
-            return GravityObject((0, 0), sprite, *args)
-
-    @classmethod
     def createMe(self, jsonFile):
         pos = jsonFile["POSITION"]
         width = jsonFile["WIDTH"]
         height = jsonFile["HEIGHT"]
         imageRaw = jsonFile["IMAGE"]
         return Object(pos, imageRaw)
-
-class GravityObject(Object):
-
-    GRAVCONSTANT = 0.00005
-
-    def __init__(self, pos, sprite: pygame.Surface, mass) -> None:
-        super().__init__(pos, sprite)
-        self.type = "GRAVITY_OBJECT"
-        self.mass = mass
-
-    def normalize(self, vector):
-        currentLen = math.sqrt((vector[0] ** 2) + (vector[1] ** 2))
-        newVector = vector[0] / currentLen, vector[1] / currentLen
-        return newVector
-
-    def update(self, game):
-        super().update(game)
-        for object in game.map.objects:
-            if object != self:
-                if object.type == self.type:
-                    normal = self.normalize((object.pos[0] - self.pos[0], object.pos[1] - self.pos[1]))
-                    force = normal[0] * GravityObject.GRAVCONSTANT * object.mass, normal[1] * GravityObject.GRAVCONSTANT * object.mass
-                    self.vx += force[0]
-                    self.vy += force[1]
-
-        self.moveBy(self.vx, self.vy)
