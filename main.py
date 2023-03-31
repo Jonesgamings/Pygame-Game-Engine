@@ -22,7 +22,7 @@ for _ in range(MAXOBJECTS):
     surf.fill((randint(0, 255), randint(0, 255), randint(0, 255)))
     x = randint(MINCOORD, MAXCOORD)
     y = randint(MINCOORD, MAXCOORD)
-    obj = Object((x, y), surf, (randint(-5, 5), randint(-5, 5)))
+    obj = Object((x, y), surf, (randint(-2, 2), randint(-2, 2)))
     game.addObject(obj)
 
 game.mainloop()

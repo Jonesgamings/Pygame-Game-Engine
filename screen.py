@@ -23,7 +23,7 @@ class Game:
         self.screenWidth, self.screenHeight = self.screen.get_size()
         self.clock = pygame.time.Clock()
         self.map = Map()
-        self.camera = Camera(self.map, self.screen)
+        self.camera = Camera(self.screen)
         self.running = False
 
     def displayObjects(self):
@@ -132,9 +132,8 @@ class Game:
 
 class Camera:
 
-    def __init__(self, map, screen) -> None:
+    def __init__(self, screen) -> None:
         self.screen = screen
-        self.map = map
         self.pos = (0, 0)
         self.zoom = 1
         self.moveSpeed = 5
@@ -160,9 +159,11 @@ class Camera:
 
     def zoomTo(self, zoom):
         self.zoom = zoom
+        self.updateDisplayedArea()
 
     def zoomBy(self, zoom):
         self.zoom += zoom
+        self.updateDisplayedArea()
 
     def getDisplayedArea(self):
         self.updateDisplayedArea()

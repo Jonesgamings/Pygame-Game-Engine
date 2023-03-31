@@ -4,7 +4,6 @@ import math
 class Object:
 
     def __init__(self, pos, sprite: pygame.Surface, velocity = (0, 0), canBounce = True) -> None:
-        self.type = "DEFAULT"
         self.pos = pos
         self.sprite = sprite
         self.rect = self.sprite.get_rect()
