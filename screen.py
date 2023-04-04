@@ -185,9 +185,11 @@ class Map:
         self.objects.append(object)
 
     def collides(self, rect, objectCasting):
-        for object in self.objects:
-            if object != objectCasting:
-                if object.collides(rect):
-                    return object
-
-        return False
+        new_list = self.objects.copy()
+        new_list.remove(objectCasting)
+        index = rect.collidelist(new_list)
+        if index == -1:
+            return False
+        
+        else:
+            return new_list[index]

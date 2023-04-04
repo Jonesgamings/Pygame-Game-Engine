@@ -3,7 +3,7 @@ from object import Object
 import pygame
 from random import randint
 
-MAXOBJECTS = 100
+MAXOBJECTS = 500
 MAXCOORD = 10000
 MINCOORD = 0
 FPS = 60
